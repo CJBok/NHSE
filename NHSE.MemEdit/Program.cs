@@ -11,7 +11,9 @@ namespace NHSE.MemEdit
         [STAThread]
         static void Main()
         {
-            Application.SetHighDpiMode( HighDpiMode.SystemAware );
+#if NETCOREAPP
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+#endif
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault( false );
             Application.Run( new Main() );

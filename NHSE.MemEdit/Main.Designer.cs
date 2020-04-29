@@ -28,13 +28,34 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.lbItems = new System.Windows.Forms.ListBox();
+            this.SuspendLayout();
+            // 
+            // lbItems
+            // 
+            this.lbItems.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbItems.FormattingEnabled = true;
+            this.lbItems.Location = new System.Drawing.Point(296, 12);
+            this.lbItems.Name = "lbItems";
+            this.lbItems.Size = new System.Drawing.Size(392, 407);
+            this.lbItems.TabIndex = 0;
+            // 
+            // Main
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size( 800, 450 );
-            this.Text = "Form1";
+            this.ClientSize = new System.Drawing.Size(700, 443);
+            this.Controls.Add(this.lbItems);
+            this.Name = "Main";
+            this.Text = "ACNH - Yuzu Memory Editor";
+            this.ResumeLayout(false);
+
         }
 
         #endregion
+
+        private System.Windows.Forms.ListBox lbItems;
     }
 }
 
