@@ -11,22 +11,23 @@ namespace NHSE.Sprites
         {
             if (tile.UnitModelRoad.IsRoad())
                 return Color.RosyBrown;
-            var name = tile.UnitModel.ToString();
-            var baseColor = GetTileColor(name);
+            var baseColor = GetTileDefaultColor(tile.UnitModel);
             if (tile.Elevation == 0)
                 return baseColor;
 
             return ColorUtil.Blend(baseColor, Color.White, 1d / (tile.Elevation + 1));
         }
 
-        private static Color GetTileColor(string name)
+        private static readonly Color CliffBase = ColorUtil.Blend(Color.ForestGreen, Color.Black, 0.6d);
+
+        private static Color GetTileDefaultColor(TerrainUnitModel mdl)
         {
-            if (name.StartsWith("River")) // River
+            if (mdl.IsRiver())
                 return Color.DeepSkyBlue;
-            if (name.StartsWith("Fall")) // Waterfall
+            if (mdl.IsFall())
                 return Color.DarkBlue;
-            if (name.Contains("Cliff"))
-                return ColorUtil.Blend(Color.ForestGreen, Color.Black, 0.5d);
+            if (mdl.IsCliff())
+                return CliffBase;
             return Color.ForestGreen;
         }
 
@@ -140,6 +141,24 @@ namespace NHSE.Sprites
             int buildingShift = g.GridWidth;
             x = (int) (((bx / 2f) - buildingShift) * scale);
             y = (int) (((by / 2f) - buildingShift) * scale);
+        }
+
+        public static Image GetAcre(in int topX, in int topY, TerrainManager terrain, int acreScale)
+        {
+            int[] data = new int[16 * 16];
+            int index = 0;
+            for (int y = 0; y < 16; y++)
+            {
+                var yi = y + topY;
+                for (int x = 0; x < 16; x++, index++)
+                {
+                    var tile = terrain.GetTile(x + topX, yi);
+                    data[index] = GetTileColor(tile).ToArgb();
+                }
+            }
+
+            var final = ImageUtil.ScalePixelImage(data, acreScale, 16, 16, out int fw, out int fh);
+            return ImageUtil.GetBitmap(final, fw, fh);
         }
     }
 }
