@@ -8,8 +8,21 @@ namespace NHSE.WinForms
     public partial class ItemEditor : UserControl
     {
         private readonly List<ComboItem> Recipes = GameInfo.Strings.CreateItemDataSource(RecipeList.Recipes, false);
+        private readonly CheckBox[] Watered;
 
-        public ItemEditor() => InitializeComponent();
+        public ItemEditor()
+        {
+            InitializeComponent();
+
+            Watered = new[]
+            {
+                CHK_WV0, CHK_WV1,
+                CHK_WV2, CHK_WV3,
+                CHK_WV4, CHK_WV5,
+                CHK_WV6, CHK_WV7,
+                CHK_WV8, CHK_WV9,
+            };
+        }
 
         private ItemKind kind;
         private ushort itemID;
@@ -30,15 +43,22 @@ namespace NHSE.WinForms
         public Item LoadItem(Item item)
         {
             CB_ItemID.SelectedValue = (int)item.ItemId;
-            NUD_Count.Value = item.Count;
-            NUD_Uses.Value = item.UseCount;
-            NUD_Flag0.Value = item.Flags0;
-            NUD_Flag1.Value = item.Flags1;
 
             if (kind.IsFlower())
             {
                 LoadGenes(item.Genes);
-                LoadFlags(item.FlowerFlags);
+                CHK_Gold.Checked = item.IsWateredGold;
+                CHK_IsWatered.Checked = item.IsWatered;
+                NUD_WaterDays.Value = item.DaysWatered;
+                for (int i = 0; i < Watered.Length; i++)
+                    Watered[i].Checked = item.GetIsWateredByVisitor(i);
+            }
+            else
+            {
+                NUD_Count.Value = item.Count;
+                NUD_Uses.Value = item.UseCount;
+                NUD_Flag0.Value = item.Flags0;
+                NUD_Flag1.Value = item.Flags1;
             }
 
             return item;
@@ -51,7 +71,11 @@ namespace NHSE.WinForms
             if (kind.IsFlower())
             {
                 item.Genes = SaveGenes();
-                item.FlowerFlags = SaveFlags();
+                item.DaysWatered = (int) NUD_WaterDays.Value;
+                item.IsWateredGold = CHK_Gold.Checked;
+                item.IsWatered = CHK_IsWatered.Checked;
+                for (int i = 0; i < Watered.Length; i++)
+                    item.SetIsWateredByVisitor(i, Watered[i].Checked);
             }
             else
             {
@@ -132,30 +156,14 @@ namespace NHSE.WinForms
             return val;
         }
 
-        private void LoadFlags(byte flags)
+        private void L_WaterDays_Click(object sender, EventArgs e)
         {
-            CHK_F1.Checked = (flags & 001) != 0;
-            CHK_F2.Checked = (flags & 002) != 0;
-            CHK_F3.Checked = (flags & 004) != 0;
-            CHK_F4.Checked = (flags & 008) != 0;
-            CHK_F5.Checked = (flags & 016) != 0;
-            CHK_F6.Checked = (flags & 032) != 0;
-            CHK_F7.Checked = (flags & 064) != 0;
-            CHK_F8.Checked = (flags & 128) != 0;
-        }
-
-        private byte SaveFlags()
-        {
-            byte val = 0;
-            if (CHK_F1.Checked) val |= 001;
-            if (CHK_F2.Checked) val |= 002;
-            if (CHK_F3.Checked) val |= 004;
-            if (CHK_F4.Checked) val |= 008;
-            if (CHK_F5.Checked) val |= 016;
-            if (CHK_F6.Checked) val |= 032;
-            if (CHK_F7.Checked) val |= 064;
-            if (CHK_F8.Checked) val |= 128;
-            return val;
+            bool value = (ModifierKeys & Keys.Alt) == 0;
+            CHK_Gold.Checked = value;
+            CHK_IsWatered.Checked = value;
+            NUD_WaterDays.Value = value ? 31 : 0;
+            foreach (var v in Watered)
+                v.Checked = value;
         }
     }
 }

@@ -24,8 +24,68 @@ namespace NHSE.Core
         [field: FieldOffset(4)] public ushort Count { get; set; }
         [field: FieldOffset(6)] public ushort UseCount { get; set; }
 
-        [field: FieldOffset(4)] public FlowerGene Genes { get; set; } // flowers only
-        [field: FieldOffset(6)] public byte FlowerFlags { get; set; } // flowers only
+        #region Flowers
+
+        // flowers only -- this is really just a packed u32
+        [field: FieldOffset(4)] public FlowerGene Genes { get; set; }
+        [field: FieldOffset(5)] private ushort Watered { get; set; }
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        [field: FieldOffset(7)] private byte Watered2 { get; set; }
+        // offset 7 is unused bits
+
+        public int DaysWatered
+        {
+            get => Watered & 0x1F;
+            set => Watered = (ushort)((Watered & 0xFFE0) | (value & 0x1F));
+        }
+
+        public bool GetIsWateredByVisitor(int visitor)
+        {
+            if ((uint)visitor >= 10)
+                throw new ArgumentOutOfRangeException(nameof(visitor));
+
+            var shift = 5 + visitor;
+            return (Watered & (1 << shift)) != 0;
+        }
+
+        public void SetIsWateredByVisitor(int visitor, bool value = true)
+        {
+            if ((uint)visitor >= 10)
+                throw new ArgumentOutOfRangeException(nameof(visitor));
+
+            var shift = 5 + visitor;
+            var bit = (1 << shift);
+            var mask = ~bit;
+
+            Watered = (ushort)((Watered & mask) | (value ? bit : 0));
+        }
+
+        public bool IsWatered
+        {
+            get => ((Watered >> 15) & 1) == 1;
+            set => Watered = (ushort)((Watered & 0x7FFF) | (value ? 0x8000 : 0));
+        }
+
+        public bool IsWateredGold
+        {
+            get => (Watered2 & 1) == 1;
+            set => Watered2 = (byte)((Watered2 & 0xFE) | (value ? 1 : 0));
+        }
+
+        public void Water(bool all = false)
+        {
+            if (all)
+            {
+                Watered = 0xFFFF;
+                Watered2 = 1;
+                return;
+            }
+
+            DaysWatered = 31;
+            IsWatered = true;
+        }
+
+        #endregion
 
         public ItemType Type => (ItemType) (Flags1 & 3);
         public int ReservedIndex => (Flags1 >> 2) & 0xF;
